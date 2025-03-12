@@ -42,7 +42,7 @@ macd = np.zeros(len(close), dtype=float)
 for i in range(0,len(close)):
     macd[i] = ema12[i]-ema26[i]
 
-print(macd)
+# print(macd)
 
 signal = EMA(macd,9)
 
@@ -52,19 +52,35 @@ buyPoint = []
 
 for i in range(1,len(macd)):
     if macd[i] < signal[i] and macd[i-1] > signal[i-1]:
-            #print('sell ')
             sellPoint.append(i)
     if macd[i] > signal[i] and macd[i-1] < signal[i-1]:
-            #print('buy ')
             buyPoint.append(i)
+
+
+
+capital = [1000]
+temp = 1
+
+
+for i in range(1,len(close)-1 ):
+    stock = capital[i-1]
+    # print(i)
+    if i == sellPoint[temp]:
+         print(i,sellPoint[temp] - buyPoint[temp-1])
+         stock = stock + close[sellPoint[temp]] - close[buyPoint[temp-1]]
+         if temp + 1 < len(sellPoint):
+            temp = temp + 1
+    
+    capital.append(stock)
+
 
 
 range_macd = int(len(macd)/2)
 range_signal = int(len(signal)/2)
 range_buypoints = int(len(buyPoint)/2)
 range_sellpoints = int(len(sellPoint)/2)
-print(range_buypoints)
-print(range_sellpoints)
+# print(range_buypoints)
+# print(range_sellpoints)
 
 fig, axs = plt.subplots(2, 2, figsize=(12, 8))
 
@@ -116,26 +132,27 @@ plt.show()
 
 
 
-# axs[2].plot(range(len(macd)), macd, label='MACD')
-# axs[2].plot(range(len(signal)), signal, label='Signal')
+fig, axs = plt.subplots(2,1,figsize=(12, 8))
 
-# axs[2].scatter(
-#     buyPoint,
-#     [macd[i] for i in buyPoint],
-#     color='green', marker='^', s=20,
-#     label='Kupno'
-# )
-# axs[2].scatter(
-#     sellPoint,
-#     [macd[i] for i in sellPoint],
-#     color='red', marker='v', s=20,
-#     label='Sprzedaż'
-# )
-# axs[2].legend()
+axs[0].plot(range(len(close)), close, label='Price')
+
+axs[0].scatter(
+    buyPoint,
+    [close[i] for i in buyPoint],
+    color='green', marker='^', s=20,
+    label='Kupno'
+)
+axs[0].scatter(
+    sellPoint,
+    [close[i] for i in sellPoint],
+    color='red', marker='v', s=20,
+    label='Sprzedaż'
+)
+axs[0].legend()
+
+axs[1].plot(range(len(capital)), capital , label='capital')
+axs[1].legend()
 
 plt.legend()
+plt.tight_layout() 
 plt.show()
-
-
-
-
