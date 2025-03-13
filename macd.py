@@ -5,14 +5,12 @@ import matplotlib.pyplot as plt
 
 
 df = pd.read_csv('dnp_d.csv')
-#df = pd.read_csv('ubisoft.csv')
 close = df['Zamkniecie']
 
 
 
 def EMA(data,span):
     ema = np.zeros(len(data), dtype=float) 
-    #ema = np.zeros(span, dtype=float)
     a = 2/(span + 1)
     x = 1 - a
 
@@ -35,14 +33,12 @@ def EMA(data,span):
     return ema
     
 
-#print(close.head())
 ema12 = EMA(close,12)
 ema26 = EMA(close,26)
 macd = np.zeros(len(close), dtype=float) 
 for i in range(0,len(close)):
     macd[i] = ema12[i]-ema26[i]
 
-# print(macd)
 
 signal = EMA(macd,9)
 
@@ -79,8 +75,6 @@ range_macd = int(len(macd)/2)
 range_signal = int(len(signal)/2)
 range_buypoints = int(len(buyPoint)/2)
 range_sellpoints = int(len(sellPoint)/2)
-# print(range_buypoints)
-# print(range_sellpoints)
 
 fig, axs = plt.subplots(2, 2, figsize=(12, 8))
 
