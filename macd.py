@@ -8,7 +8,7 @@ from typing import List
 #downlad price from csv 
 df = pd.read_csv('dnp_d.csv')
 close = df['Zamkniecie']
-#len_close: int = len(close)
+
 
 
 def EMA(data: Sequence[float], span: int) -> np.ndarray:
