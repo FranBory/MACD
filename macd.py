@@ -1,75 +1,89 @@
 import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
+from typing import Sequence
+from typing import List
 
 
-
+#downlad price from csv 
 df = pd.read_csv('dnp_d.csv')
 close = df['Zamkniecie']
+len_close: int = len(close)
 
 
-
-def EMA(data,span):
-    ema = np.zeros(len(data), dtype=float) 
-    a = 2/(span + 1)
-    x = 1 - a
+def EMA(data: Sequence[float], span: int) -> np.ndarray:
+    ema = np.zeros(len_close, dtype=float) 
+    alpha: float = 2/(span + 1)
+    one_minus_alpha: float = 1 - alpha
 
     for i in range(0,span):
         emaL = data[i]
         emaM = 1
         for j in range(1,i+1):
-            emaL = emaL + data[i-j] * x**j 
-            emaM = emaM + x**j
+            emaL = emaL + data[i-j] * one_minus_alpha**j 
+            emaM = emaM + one_minus_alpha**j
         ema[i] = emaL / emaM
 
     for i in range(span,len(data)):
         emaL = data[i]
         emaM = 1
         for j in range(1,span+1):
-            emaL = emaL + data[i-j] * x**j 
-            emaM = emaM + x**j
+            emaL = emaL + data[i-j] * one_minus_alpha**j 
+            emaM = emaM + one_minus_alpha**j
         ema[i] = emaL / emaM
     
     return ema
-    
 
-ema12 = EMA(close,12)
-ema26 = EMA(close,26)
-macd = np.zeros(len(close), dtype=float) 
-for i in range(0,len(close)):
-    macd[i] = ema12[i]-ema26[i]
-
-
-signal = EMA(macd,9)
-
-
-sellPoint = []
-buyPoint = []
-
-for i in range(1,len(macd)):
-    if macd[i] < signal[i] and macd[i-1] > signal[i-1]:
+def find_sell_points(macd: np.ndarray,signal: np.ndarray) -> List[int]:
+    sellPoint: List[int] = []
+    for i in range(1,len(macd)):
+        if macd[i] < signal[i] and macd[i-1] > signal[i-1]:
             sellPoint.append(i)
-    if macd[i] > signal[i] and macd[i-1] < signal[i-1]:
+    return sellPoint
+
+def find_buy_points(macd: np.ndarray,signal: np.ndarray) -> List[int]:
+    buyPoint: List[int] = []
+    for i in range(1,len(macd)):
+        if macd[i] > signal[i] and macd[i-1] < signal[i-1]:
             buyPoint.append(i)
+    return buyPoint
 
 
+def MACD(data: Sequence[float]) -> np.ndarray:
+    ema12 = EMA(close,12)
+    ema26 = EMA(close,26)
+    macd = np.zeros(len_close, dtype=float) 
+    for i in range(0,len_close):
+        macd[i] = ema12[i]-ema26[i]
+    return macd
 
-capital = [1000]
-temp = 1
 
+def simulate_capital(sellPoint: np.ndarray,buyPoint: np.ndarray,close: Sequence[float],starting_capital:float) ->List[float]:
+    arrayShift: int = 0
+    capital = [starting_capital]
+    stock:float = 0
+    temp:int = 0
+    if sellPoint[0] < buyPoint[0]:
+        arrayShift = 1
+        temp = 1
 
-for i in range(1,len(close)-1 ):
-    stock = capital[i-1]
-    # print(i)
-    if i == sellPoint[temp]:
-         print(i,sellPoint[temp] - buyPoint[temp-1])
-         stock = stock + close[sellPoint[temp]] - close[buyPoint[temp-1]]
-         if temp + 1 < len(sellPoint):
-            temp = temp + 1
+    for i in range(1,len_close-1):
+        stock = capital[i-1]
+        if i == sellPoint[temp]:
+            stock = stock + close[sellPoint[temp]] - close[buyPoint[temp-arrayShift]]
+            if temp + 1 < len(sellPoint):
+                temp = temp + 1
+        capital.append(stock)
     
-    capital.append(stock)
+    return capital
 
 
+
+macd = MACD(close)
+signal = EMA(macd,9)
+sellPoint = find_sell_points(macd,signal)
+buyPoint = find_buy_points(macd,signal)
+capital = simulate_capital(sellPoint,buyPoint,close,1000)
 
 range_macd = int(len(macd)/2)
 range_signal = int(len(signal)/2)
@@ -80,6 +94,7 @@ fig, axs = plt.subplots(2, 2, figsize=(12, 8))
 
 start0 = 105
 end0   = 200 
+
 axs[0, 0].plot(range(start0, end0 + 1), macd[start0 : end0 + 1], label='MACD')
 axs[0, 0].plot(range(start0, end0 + 1), signal[start0 : end0 + 1], label='Signal')
 buyPoint0 = [i for i in buyPoint if start0 <= i <= end0]
@@ -100,6 +115,7 @@ axs[1, 0].set_title(f'Price {start0}-{end0}')
 
 start1 = 1000
 end1   = 1150
+
 axs[0, 1].plot(range(start1, end1 + 1), macd[start1 : end1 + 1], label='MACD')
 axs[0, 1].plot(range(start1, end1 + 1), signal[start1 : end1 + 1], label='Signal')
 buyPoint1 = [i for i in buyPoint if start1 <= i <= end1]
@@ -122,14 +138,9 @@ plt.tight_layout()
 plt.show()
 
 
-
-
-
-
 fig, axs = plt.subplots(2,1,figsize=(12, 8))
 
 axs[0].plot(range(len(close)), close, label='Price')
-
 axs[0].scatter(
     buyPoint,
     [close[i] for i in buyPoint],
