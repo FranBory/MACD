@@ -1,1 +1,37 @@
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*$py.class
+
+# CSV files (if data is private or large)
+# Uncomment the line below if you want to ignore local datasets
+# *.csv
+
+# Jupyter Notebook checkpoints
+.ipynb_checkpoints/
+
+# VSCode settings
+.vscode/
+
+# PyCharm settings
+.idea/
+
+# MacOS junk
+.DS_Store
+
+# Logs
+*.log
+
+# Environment
+.env
+.venv/
 venv/
+env/
+ENV/
+
+# matplotlib cache
+.matplotlib/
+
+# Windows-specific
+Thumbs.db
+ehthumbs.db
