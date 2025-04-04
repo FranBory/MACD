@@ -23,8 +23,3 @@ These crossovers are interpreted as potential entry and exit points.
 - ✅ Simulation of capital growth from an initial investment
 - ✅ Multiple visualization plots with trading markers
 - ✅ Configurable and reusable for other CSV datasets
-
----
-
-## 🗂️ Project Structure
-
